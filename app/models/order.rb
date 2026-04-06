@@ -18,4 +18,8 @@ class Order < ApplicationRecord
   def cancel!
     update!(status: "cancelled")
   end
+
+  def get_total_cents
+    order_items.sum("quantity * unit_price_cents_snapshot")
+  end
 end
