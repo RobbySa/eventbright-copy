@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_06_213514) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_06_214123) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,20 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_06_213514) do
     t.datetime "updated_at", null: false
     t.index ["starts_at"], name: "index_events_on_starts_at"
     t.check_constraint "ends_at > starts_at", name: "events_ends_after_starts"
+  end
+
+  create_table "order_items", force: :cascade do |t|
+    t.bigint "order_id", null: false
+    t.bigint "ticket_type_id", null: false
+    t.integer "quantity", null: false
+    t.integer "unit_price_cents_snapshot", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["order_id", "ticket_type_id"], name: "index_order_items_on_order_id_and_ticket_type_id", unique: true
+    t.index ["order_id"], name: "index_order_items_on_order_id"
+    t.index ["ticket_type_id"], name: "index_order_items_on_ticket_type_id"
+    t.check_constraint "quantity > 0", name: "order_items_quantity_positive"
+    t.check_constraint "unit_price_cents_snapshot >= 0", name: "order_items_unit_price_non_negative"
   end
 
   create_table "orders", force: :cascade do |t|
@@ -53,5 +67,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_06_213514) do
     t.check_constraint "total_quantity >= 0", name: "ticket_types_total_qty_non_negative"
   end
 
+  add_foreign_key "order_items", "orders"
+  add_foreign_key "order_items", "ticket_types"
   add_foreign_key "ticket_types", "events"
 end

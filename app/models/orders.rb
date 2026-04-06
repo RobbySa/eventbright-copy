@@ -1,7 +1,6 @@
 class Order < ApplicationRecord
-  # Future table
-  # has_many :order_items, dependent: :destroy
-  # has_many :ticket_types, through: :order_items
+  has_many :order_items, dependent: :destroy
+  has_many :ticket_types, through: :order_items
 
   STATUSES = %w[pending confirmed, cancelled].freeze
 
