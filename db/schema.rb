@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_06_210738) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_06_211451) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -20,7 +20,26 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_06_210738) do
     t.datetime "ends_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["starts_at"], name: "index_events_on_starts_at"
     t.check_constraint "ends_at > starts_at", name: "events_ends_after_starts"
   end
 
+  create_table "ticket_types", force: :cascade do |t|
+    t.bigint "event_id", null: false
+    t.string "name", null: false
+    t.integer "price_cents", null: false
+    t.string "currency", default: "USD", null: false
+    t.integer "total_quantity", null: false
+    t.integer "sold_quantity", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_id", "name"], name: "index_ticket_types_on_event_id_and_name", unique: true
+    t.index ["event_id"], name: "index_ticket_types_on_event_id"
+    t.check_constraint "price_cents >= 0", name: "ticket_types_price_non_negative"
+    t.check_constraint "sold_quantity <= total_quantity", name: "ticket_types_sold_lte_total"
+    t.check_constraint "sold_quantity >= 0", name: "ticket_types_sold_qty_non_negative"
+    t.check_constraint "total_quantity >= 0", name: "ticket_types_total_qty_non_negative"
+  end
+
+  add_foreign_key "ticket_types", "events"
 end
