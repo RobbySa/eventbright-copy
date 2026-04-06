@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_06_211451) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_06_213514) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -22,6 +22,18 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_06_211451) do
     t.datetime "updated_at", null: false
     t.index ["starts_at"], name: "index_events_on_starts_at"
     t.check_constraint "ends_at > starts_at", name: "events_ends_after_starts"
+  end
+
+  create_table "orders", force: :cascade do |t|
+    t.string "status", default: "pending", null: false
+    t.integer "total_cents", default: 0, null: false
+    t.string "currency", default: "USD", null: false
+    t.datetime "placed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["status"], name: "index_orders_on_status"
+    t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'confirmed'::character varying, 'cancelled'::character varying]::text[])", name: "orders_valid_status"
+    t.check_constraint "total_cents >= 0", name: "orders_total_non_negative"
   end
 
   create_table "ticket_types", force: :cascade do |t|
