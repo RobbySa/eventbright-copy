@@ -1,0 +1,14 @@
+class CreateEvents < ActiveRecord::Migration[7.1]
+  def change
+    create_table :events do |t|
+      t.string   :title, null: false
+      t.datetime :starts_at, null: false
+      t.datetime :ends_at, null: false
+
+      t.timestamps
+    end
+
+    add_index :events, :starts_at
+    add_check_constraint :events, "ends_at > starts_at", name: "events_ends_after_starts"
+  end
+end
