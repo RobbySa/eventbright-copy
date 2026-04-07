@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe PlaceOrder do
+RSpec.describe Orders::Place do
   let(:event) { create(:event, name: 'Test Event') }
   let(:ga_type) { create(:ticket_type, event: event, name: 'General Admission', price_cents: 2500, total_quantity: 10, sold_quantity: ga_type_sold) }
   let(:vip_type) { create(:ticket_type, event: event, name: 'VIP', price_cents: 7500, total_quantity: 5, sold_quantity: 0) }
@@ -115,7 +115,7 @@ RSpec.describe PlaceOrder do
       threads = 2.times.map do
         Thread.new do
           # Each thread gets its own AR connection from the pool
-          result = PlaceOrder.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
+          result = Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
           results << result
         end
       end
@@ -132,7 +132,7 @@ RSpec.describe PlaceOrder do
     it 'never exceeds total_quantity in sold_quantity' do
       5.times.map do
         Thread.new do
-          PlaceOrder.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
+          Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
         end
       end.each(&:join)
 
