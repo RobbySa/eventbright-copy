@@ -1,8 +1,9 @@
 module Orders
   class Place
-    def initialize(items:)
+    def initialize(email:, items:)
       # items: [{ ticket_type_id: 1, quantity: 2 }, ...]
       @items = items
+      @email = email.to_s.downcase.strip
     end
 
     def call
@@ -52,7 +53,8 @@ module Orders
       order = Order.create!(
         status:    'confirmed',
         currency:  'USD',
-        placed_at: Time.current
+        placed_at: Time.current,
+        email:     @email
       )
 
       @items.each do |item|

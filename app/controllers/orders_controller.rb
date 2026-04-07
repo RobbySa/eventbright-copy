@@ -1,7 +1,7 @@
 class OrdersController < ApplicationController
   def create
     # params[:items] = [{ ticket_type_id:, quantity: }]
-    result = Orders::Place.new(items: params[:items]).call
+    result = Orders::Place.new(email: params[:email], items: params[:items]).call
 
     if result[:success?]
       render json: OrderSerializer.new(result[:order]), status: :created

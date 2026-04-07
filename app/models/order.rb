@@ -5,7 +5,7 @@ class Order < ApplicationRecord
   STATUSES = %w[pending confirmed cancelled].freeze
 
   validates :status, inclusion: { in: STATUSES }
-  validates :currency, presence: true
+  validates :currency, :email, presence: true
   validates :total_cents, numericality: { greater_than_or_equal_to: 0 }
 
   scope :confirmed, -> { where(status: 'confirmed') }

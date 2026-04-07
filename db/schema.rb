@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2026_04_06_214123) do
+ActiveRecord::Schema[7.1].define(version: 2026_04_07_113032) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -45,6 +45,7 @@ ActiveRecord::Schema[7.1].define(version: 2026_04_06_214123) do
     t.datetime "placed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "email", null: false
     t.index ["status"], name: "index_orders_on_status"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'confirmed'::character varying, 'cancelled'::character varying]::text[])", name: "orders_valid_status"
     t.check_constraint "total_cents >= 0", name: "orders_total_non_negative"

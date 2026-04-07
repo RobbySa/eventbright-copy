@@ -7,7 +7,7 @@ RSpec.describe Orders::Place do
 
   let(:ga_type_sold) { 0 }
   let(:items) { [{ ticket_type_id: ga_type.id, quantity: 2 }, { ticket_type_id: vip_type.id, quantity: 1 }] }
-  let(:result) { described_class.new(items: items).call }
+  let(:result) { described_class.new(email: 'customer@example.com', items: items).call }
 
   # Check happy path
   describe 'successful purchase' do
@@ -115,7 +115,7 @@ RSpec.describe Orders::Place do
       threads = 2.times.map do
         Thread.new do
           # Each thread gets its own AR connection from the pool
-          result = Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
+          result = Orders::Place.new(email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
           results << result
         end
       end
@@ -132,7 +132,7 @@ RSpec.describe Orders::Place do
     it 'never exceeds total_quantity in sold_quantity' do
       5.times.map do
         Thread.new do
-          Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
+          Orders::Place.new(email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call
         end
       end.each(&:join)
 

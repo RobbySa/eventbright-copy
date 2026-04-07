@@ -1,12 +1,12 @@
 require "rails_helper"
 
-RSpec.describe "Orders API", type: :request do
+RSpec.describe 'Orders API', type: :request do
   let(:event) { create(:event) }
   let(:ga_type) { create(:ticket_type, event: event, name: 'General Admission', price_cents: 2500, total_quantity: 10, sold_quantity: ga_sold_quantity) }
   let(:vip_type) { create(:ticket_type, event: event, name: 'VIP', price_cents: 7500, total_quantity: 5, sold_quantity: 0) }
 
   let(:ga_sold_quantity) { 0 }
-  let(:valid_params) { { items: [{ ticket_type_id: ga_type.id, quantity: 2 }] } }
+  let(:valid_params) { { email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 2 }] } }
 
   # ----------------------------------------------------------------
   # POST /orders
@@ -37,7 +37,7 @@ RSpec.describe "Orders API", type: :request do
       end
 
       it 'returns a formatted total with amount and currency' do
-        expect(json['total']).to eq("amount" => 50.0, "currency" => "USD")
+        expect(json['total']).to eq('amount' => 50.0, 'currency' => 'USD')
       end
 
       it 'includes placed_at timestamp' do
@@ -64,7 +64,7 @@ RSpec.describe "Orders API", type: :request do
 
     # Check that multiple items are handled correctly.
     context 'with multiple ticket types' do
-      let(:valid_params) { { items: [{ ticket_type_id: ga_type.id, quantity: 2 }, { ticket_type_id: vip_type.id, quantity: 1 }] } }
+      let(:valid_params) { { email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 2 }, { ticket_type_id: vip_type.id, quantity: 1 }] } }
 
       before { post '/orders', params: valid_params, as: :json }
 
@@ -102,7 +102,7 @@ RSpec.describe "Orders API", type: :request do
     end
 
     context 'when requesting more tickets than available' do
-      let(:valid_params) { { items: [{ ticket_type_id: ga_type.id, quantity: 999 }] } }
+      let(:valid_params) { { email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 999 }] } }
 
       before { post '/orders', params: valid_params, as: :json }
 
@@ -116,7 +116,19 @@ RSpec.describe "Orders API", type: :request do
     end
 
     context 'with missing items' do
-      let(:valid_params) { { items: [] } }
+      let(:valid_params) { { email: 'customer@example.com', items: [] } }
+
+      before do
+        post '/orders', params: valid_params, as: :json
+      end
+
+      it 'returns 422' do
+        expect(response).to have_http_status(:unprocessable_content)
+      end
+    end
+
+    context 'with missing email' do
+      let(:valid_params) { { email: nil, items: [{ ticket_type_id: ga_type.id, quantity: 1 }] } }
 
       before do
         post '/orders', params: valid_params, as: :json
@@ -131,29 +143,29 @@ RSpec.describe "Orders API", type: :request do
   # ----------------------------------------------------------------
   # GET /orders/:id
   # ----------------------------------------------------------------
-  describe "GET /orders/:id" do
-    let(:order) { Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call[:order] }
+  describe 'GET /orders/:id' do
+    let(:order) { Orders::Place.new(email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call[:order] }
 
-    context "when the order exists" do
+    context 'when the order exists' do
       before { get "/orders/#{order.id}", as: :json }
 
-      it "returns 200 OK" do
+      it 'returns 200 OK' do
         expect(response).to have_http_status(:ok)
       end
 
-      it "returns the correct order" do
-        expect(json["id"]).to eq(order.id)
+      it 'returns the correct order' do
+        expect(json['id']).to eq(order.id)
       end
 
-      it "includes items" do
-        expect(json["items"]).to be_an(Array)
+      it 'includes items' do
+        expect(json['items']).to be_an(Array)
       end
     end
 
-    context "when the order does not exist" do
-      before { get "/orders/999999", as: :json }
+    context 'when the order does not exist' do
+      before { get '/orders/999999', as: :json }
 
-      it "returns 404" do
+      it 'returns 404' do
         expect(response).to have_http_status(:not_found)
       end
     end
