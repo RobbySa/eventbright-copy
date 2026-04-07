@@ -127,4 +127,35 @@ RSpec.describe "Orders API", type: :request do
       end
     end
   end
+
+  # ----------------------------------------------------------------
+  # GET /orders/:id
+  # ----------------------------------------------------------------
+  describe "GET /orders/:id" do
+    let(:order) { Orders::Place.new(items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call[:order] }
+
+    context "when the order exists" do
+      before { get "/orders/#{order.id}", as: :json }
+
+      it "returns 200 OK" do
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "returns the correct order" do
+        expect(json["id"]).to eq(order.id)
+      end
+
+      it "includes items" do
+        expect(json["items"]).to be_an(Array)
+      end
+    end
+
+    context "when the order does not exist" do
+      before { get "/orders/999999", as: :json }
+
+      it "returns 404" do
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
