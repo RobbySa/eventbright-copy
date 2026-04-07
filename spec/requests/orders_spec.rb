@@ -9,6 +9,48 @@ RSpec.describe 'Orders API', type: :request do
   let(:valid_params) { { email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 2 }] } }
 
   # ----------------------------------------------------------------
+  # GET /orders
+  # ----------------------------------------------------------------
+  describe 'GET /orders' do
+    # Check that email param is required
+    context 'when email param is missing' do
+      before { get '/orders', as: :json }
+
+      it 'returns 400 Bad Request' do
+        expect(response).to have_http_status(:bad_request)
+      end
+
+      it 'returns a descriptive error' do
+        expect(json['error']).to match(/email/i)
+      end
+    end
+
+    context 'when email has no associated orders' do
+      before { get '/orders?email=customer@example.com', as: :json }
+
+      it 'returns 200 OK' do
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'returns an empty array' do
+        expect(json).to eq([])
+      end
+    end
+
+    context "when another customer has orders" do
+      let!(:my_order) { Orders::Place.new(email: 'customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call[:order] }
+      let!(:their_order) { Orders::Place.new(email: 'other_customer@example.com', items: [{ ticket_type_id: ga_type.id, quantity: 1 }]).call[:order] }
+
+      before { get '/orders?email=customer@example.com', as: :json }
+
+      it "only returns the requesting customer's orders" do
+        expect(json.length).to eq(1)
+        expect(json.first["id"]).to eq(my_order.id)
+      end
+    end
+  end
+
+  # ----------------------------------------------------------------
   # POST /orders
   # ----------------------------------------------------------------
   describe 'POST /orders' do

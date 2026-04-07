@@ -1,4 +1,16 @@
 class OrdersController < ApplicationController
+  def index
+    if params[:email].blank?
+      return render json: { error: "email param is required" }, status: :bad_request
+    end
+
+    orders = Order.where(email: params[:email].downcase.strip)
+                  .includes(order_items: :ticket_type)
+                  .order(created_at: :desc)
+
+    render json: orders.map { |order| OrderSerializer.new(order).as_json }, status: :ok
+  end
+
   def create
     # params[:items] = [{ ticket_type_id:, quantity: }]
     result = Orders::Place.new(email: params[:email], items: params[:items]).call
